@@ -74,13 +74,25 @@ object List {
     }
   }
 
+  def appendViaFoldLeft[A](l: List[A], v: A): List[A] =
+    foldRight(l, List[A]())((el: A, r: List[A]) => if (r == Nil) Cons(el, Cons(v, Nil)) else Cons(el, r))
+
   def last[A](as: List[A]): List[A] = as match {
     case Nil          => Nil
     case Cons(h, Nil) => Cons(h, Nil)
     case Cons(h, t)   => last(t)
   }
-  
-  def reverse[A](as: List[A]): List[A] = 
-    foldLeft(as, List[A]())((acc,el) => Cons(el, acc))
 
+  def reverse[A](as: List[A]): List[A] =
+    foldLeft(as, List[A]())((acc, el) => Cons(el, acc))
+
+  def foldRight2[A, B](as: List[A], z: B)(f: (A, B) => B): B =
+    foldLeft(reverse(as), z)((b, a) => f(a, b))
+
+  def plusOne(l: List[Int]): List[Int] = 
+   foldRight(l, List[Int]())((a, b) => Cons(a + 1, b))
+
+  def convertDoubleToString(l: List[Double]): List[String] =
+    foldRight(l, List[String]())((a, b) => Cons(a.toString(), b))
+    
 }
