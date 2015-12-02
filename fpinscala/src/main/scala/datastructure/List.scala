@@ -1,6 +1,7 @@
 package datastructure
 
 import scala.annotation.tailrec
+import scala.collection.mutable.ListBuffer
 
 sealed trait List[+A]
 case object Nil extends List[Nothing]
@@ -89,10 +90,28 @@ object List {
   def foldRight2[A, B](as: List[A], z: B)(f: (A, B) => B): B =
     foldLeft(reverse(as), z)((b, a) => f(a, b))
 
-  def plusOne(l: List[Int]): List[Int] = 
-   foldRight(l, List[Int]())((a, b) => Cons(a + 1, b))
+  def plusOne(l: List[Int]): List[Int] =
+    foldRight(l, List[Int]())((a, b) => Cons(a + 1, b))
 
   def convertDoubleToString(l: List[Double]): List[String] =
     foldRight(l, List[String]())((a, b) => Cons(a.toString(), b))
-    
+
+  def map[A, B](l: List[A])(f: A => B): List[B] = l match {
+    case Nil        => Nil
+    case Cons(h, t) => Cons(f(h), map(t)(f))
+  }
+  
+  def map2[A, B](l: List[A])(f: A => B): List[B] = {
+    val buffer = new ListBuffer[B]()
+    def go(l: List[A]): Unit = l match {
+      case Nil => ()
+      case Cons(h, t) => {
+          buffer += f(h)
+          go(t)
+      }
+    }
+    go(l)
+    List(buffer.toList: _*)    
+  }
+  
 }
