@@ -68,6 +68,12 @@ object List {
   }
   def length[A](as: List[A]): Int = foldRight(as, 0)((a: A, b: Int) => b + 1)
 
+  def append[A](l: List[A], l2: List[A]): List[A] =
+    l match {
+      case Nil        => l2
+      case Cons(h, t) => Cons(h, append(t, l2))
+    }
+
   def append[A](as: List[A], v: A): List[A] = {
     as match {
       case Nil        => Cons(v, Nil)
@@ -100,18 +106,44 @@ object List {
     case Nil        => Nil
     case Cons(h, t) => Cons(f(h), map(t)(f))
   }
-  
+
   def map2[A, B](l: List[A])(f: A => B): List[B] = {
     val buffer = new ListBuffer[B]()
     def go(l: List[A]): Unit = l match {
       case Nil => ()
       case Cons(h, t) => {
-          buffer += f(h)
-          go(t)
+        buffer += f(h)
+        go(t)
       }
     }
     go(l)
-    List(buffer.toList: _*)    
+    List(buffer.toList: _*)
   }
-  
+
+  // 3.19
+  def filter[A](l: List[A])(f: A => Boolean): List[A] = {
+    val buffer = new ListBuffer[A]()
+    def go(as: List[A]): Unit = as match {
+      case Nil => ()
+      case Cons(h, t) => {
+        if (!f(h)) buffer += h
+        go(t)
+      }
+    }
+    go(l)
+    List(buffer.toList: _*)
+  }
+
+  def filterViaFoldRight[A](l: List[A])(f: A => Boolean): List[A] =
+    foldRight(l, Nil: List[A])((h, t) => if (f(h)) Cons(h, t) else t)
+
+  // 3.20
+  def flatMap[A, B](l: List[A])(f: A => List[B]): List[B] = l match {
+    case Nil        => Nil
+    case Cons(h, t) => append(f(h), flatMap(t)(f))
+  }
+
+  // 3.21
+  def filterViaFlatMap[A](l: List[A])(f: A => Boolean): List[A] =
+    flatMap(l)(v => if (f(v)) Nil else List(v))    
 }
