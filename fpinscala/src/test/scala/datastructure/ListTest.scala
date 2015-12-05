@@ -56,4 +56,23 @@ class SpeedTest extends FunSuite {
     val numbers = List[Int](1, 2, 3, 4, 5)
     assert(List[Int](1, 3, 5) == List.filterViaFlatMap(numbers)(_ % 2 == 0))
   }
+
+  test("should the list of the result between two integer list") {
+    assert(List.plusLists(List(1, 2, 3), List(4, 5, 6)) == List(5, 7, 9))
+  }
+
+  test("should the list of the result between two integer list by using zipWith method") {
+    assert(List.zipWith(List(1, 2, 3), List(4, 5, 6))(_ + _) == List(5, 7, 9))
+    assert(List.zipWith(List(1, 2, 3), List(4, 5, 6, 7))(_ + _) == List(5, 7, 9))
+    assert(List.zipWith(List(1, 2, 3, 8, 9), List(4, 5, 6))(_ + _) == List(5, 7, 9))
+    assert(List.zipWith(List(1, 2, 3, 8, 9), List(4, 5, 6))(_ * _) == List(4, 10, 18))
+  }
+
+  test("should has subsequence of list") {
+    assert(List.hasSubsequence(List(1, 2, 3, 4, 5), List(4)))
+    assert(List.hasSubsequence(List(1, 2, 3, 4, 5), List(4, 5)))
+    assert(List.hasSubsequence(List(1, 2, 3, 4, 5), List(3, 4, 5)))
+    assert(!List.hasSubsequence(List(1, 2, 3, 4, 5), List(9, 4, 5)))
+    assert(!List.hasSubsequence(List(1, 2, 3, 4, 5), List(1, 2, 9, 4, 5)))
+  }
 }

@@ -145,5 +145,39 @@ object List {
 
   // 3.21
   def filterViaFlatMap[A](l: List[A])(f: A => Boolean): List[A] =
-    flatMap(l)(v => if (f(v)) Nil else List(v))    
+    flatMap(l)(v => if (f(v)) Nil else List(v))
+
+  // 3.22
+  def plusLists(l: List[Int], r: List[Int]): List[Int] = (l, r) match {
+    case (Nil, Nil)                   => Nil
+    case (Cons(h, t), Nil)            => Cons(h, t)
+    case (Nil, Cons(h, t))            => Cons(h, t)
+    case (Cons(lh, lt), Cons(rh, rt)) => Cons(lh + rh, plusLists(lt, rt))
+  }
+
+  // 3.23
+  def zipWith[A, B, C](l: List[A], r: List[B])(f: (A, B) => C): List[C] = (l, r) match {
+    case (Nil, Nil)                   => Nil
+    case (Cons(h, t), Nil)            => Nil
+    case (Nil, Cons(h, t))            => Nil
+    case (Cons(lh, lt), Cons(rh, rt)) => Cons(f(lh, rh), zipWith(lt, rt)(f))
+  }
+
+  // 3.24  
+  def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = {
+    @tailrec
+    def loop(target: List[A], subList: List[A], acc: Boolean): Boolean = (target, subList) match {
+      case (_, Nil)                     => acc
+      case (Cons(lh, lt), Cons(rh, rt)) => if (acc) loop(lt, rt, lh == rh && acc) else acc
+      case _                            => false
+    }
+
+    @tailrec
+    def go(l: List[A]): Boolean = l match {
+      case Nil        => false
+      case Cons(_, t) => if (loop(l, sub, true)) true else go(t)
+    }
+    go(sup)
+  }
+
 }
