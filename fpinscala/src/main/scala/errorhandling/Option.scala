@@ -25,18 +25,35 @@ object Option {
   def Try[A](a: => A): Option[A] = try Some(a) catch { case e: Exception => None }
   // 4.3
   def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = a.flatMap { x => b.map { y => f(x, y) } }
-  
+
+  def mapViaForComprehension[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] =
+    for {
+      aa <- a
+      bb <- b
+    } yield f(aa, bb)
+
   // 4.4 it's hard. 
   def sequence[A](a: List[Option[A]]): Option[List[A]] = a match {
-    case Nil => Some(Nil)
-    case h :: t => h.flatMap { x => sequence(t).map( x :: _ ) }
+    case Nil    => Some(Nil)
+    case h :: t => h.flatMap { x => sequence(t).map(x :: _) }
   }
+  // 4.5 
+  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = a match {
+    case Nil    => Some(Nil)
+    case h :: t => f(h).flatMap { x => traverse(t)(f).map(x :: _) }
+  }
+  
+  def traverseViaMap[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = a match {
+    case Nil => Some(Nil)
+    case h :: t => map2(f(h), traverseViaMap(t)(f))(_ :: _)
+  }
+    
+
 }
 object Math {
   def mean(xs: Seq[Double]): Option[Double] = if (xs.isEmpty) None else Some(xs.sum / xs.length)
   // 4.2 
   def variance(xs: Seq[Double]): Option[Double] = mean(xs).flatMap { m => mean(xs.map(x => math.pow(x - m, 2))) }
-  
-  
+
 }
 
