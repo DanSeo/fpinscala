@@ -88,6 +88,19 @@ sealed trait Stream[+A] {
 
   // 5.7  None Strict: appendViaFoldRight
   // def mapViaFoldRight filterViaFoldRight appendViaFoldRight flatMapViaFoldRight
+
+  def mapViaFoldRight[B](f: A => B): Stream[B] =
+    foldRight(Stream[B]())((a, b) => Stream.cons(f(a), b))
+
+  def filterViaFoldRight(f: A => Boolean): Stream[A] =
+    foldRight(Stream[A]())((a, b) => if (f(a)) Stream.cons(a, b) else b)
+
+  def appendViaFoldRight[B >: A](s: => Stream[B]): Stream[B] =
+    foldRight(s)((a, b) => Stream.cons(a, b))
+
+  def flatMapViaFoldRight[B](f: A => Stream[B]): Stream[B] =
+    foldRight(Empty: Stream[B])((a, b) => f(a) appendViaFoldRight b)
+
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]

@@ -27,10 +27,10 @@ class StreamTest extends FunSuite {
     val stream = Stream(1, 2, 3, 4)
     assert(Some(1) == stream.headOptionViaFoldRight)
   }
-  
-  
+
   test("head option2 Via foldRight ") {
     val stream = Stream(1, 2, 3, 4)
     assert(Some(1) == stream.headOption2ViaFoldRight)
   }
+
 }
