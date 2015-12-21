@@ -90,4 +90,30 @@ object Stream {
 
   def apply[A](as: A*): Stream[A] =
     if (as.isEmpty) empty else cons(as.head, apply(as.tail: _*))
+  // 5.8 문제 풀이 
+  def constant[A](a: A): Stream[A] = {
+    lazy val tail: Stream[A] = Cons(() => a, () => tail)
+    tail
+  }
+
+  def constantViaSmartcons[A](a: A): Stream[A] =
+    cons(a, constantViaSmartcons(a))
+
+  // 5.9
+  def from(n: Int): Stream[Int] = cons(n, from(n + 1))
+  // 5.10
+  val fibs = {
+    def go(f0: Int, f1: Int): Stream[Int] = {
+      lazy val tail: Stream[Int] = cons(f1, go(f0, f0 + f1))
+      tail
+    }
+    go(0, 1)
+  }
+
+  // 5.11
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] =
+    f(z) match {
+      case Some((a, s)) => cons(a, unfold(s)(f))
+      case None         => Empty
+    }
 }
