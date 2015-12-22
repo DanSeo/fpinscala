@@ -33,7 +33,7 @@ sealed trait Stream[+A] {
   // 5.2
   def take(n: Int): Stream[A] = this match {
     case Cons(h, t) if n > 1  => Stream.cons(h(), t().take(n - 1))
-    case Cons(h, _) if n == 0 => Stream.cons(h(), Empty)
+    case Cons(h, _) if n == 1 => Stream.cons(h(), Empty)
     case _                    => Empty
   }
 
@@ -100,8 +100,8 @@ sealed trait Stream[+A] {
 
   def flatMapViaFoldRight[B](f: A => Stream[B]): Stream[B] =
     foldRight(Empty: Stream[B])((a, b) => f(a) appendViaFoldRight b)
-
 }
+
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
 
@@ -129,7 +129,7 @@ object Stream {
   // 5.10
   val fibs = {
     def go(f0: Int, f1: Int): Stream[Int] = {
-      lazy val tail: Stream[Int] = cons(f1, go(f0, f0 + f1))
+      lazy val tail: Stream[Int] = cons(f0, go(f1, f0 + f1))
       tail
     }
     go(0, 1)
@@ -141,4 +141,14 @@ object Stream {
       case Some((a, s)) => cons(a, unfold(s)(f))
       case None         => Empty
     }
+
+  // 5.12
+  val fibsViaUnfold = unfold[Int, (Int, Int)]((0, 1)) { s => Some((s._1, (s._2, s._1 + s._2))) }
+
+  def fromViaUnfold(n: Int): Stream[Int] = unfold(n) { s => Some((s, s + 1)) }
+
+  def constantViaUnfold[A](a: A): Stream[A] = unfold(a) { s => Some((s, s)) }
+
+  val onesViaViaUnfold = unfold(1) { s => Some((1, 1)) }
+
 }

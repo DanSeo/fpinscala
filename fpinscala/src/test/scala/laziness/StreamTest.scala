@@ -33,4 +33,20 @@ class StreamTest extends FunSuite {
     assert(Some(1) == stream.headOption2ViaFoldRight)
   }
 
+  test("fromViaUnfold take 5") {
+    assert(Stream(5, 6, 7, 8, 9, 10).toList == Stream.fromViaUnfold(5).take(5).toList)
+  }
+
+  test("onesViaUnfold take 5") {
+    assert(Stream(1, 1, 1, 1, 1).toList == Stream.onesViaViaUnfold.take(5).toList)
+  }
+
+  test("constantsViaUnfold take 5") {
+    assert(Stream(2, 2, 2, 2, 2).toList == Stream.constantViaUnfold(2).take(5).toList)
+  }
+
+  test("fibsViaUnfold take 10") {
+    assert(Stream.fibs.take(10).toList == Stream.fibsViaUnfold.take(10).toList)
+  }
+
 }
