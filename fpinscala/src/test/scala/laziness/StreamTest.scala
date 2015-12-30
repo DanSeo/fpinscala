@@ -49,4 +49,7 @@ class StreamTest extends FunSuite {
     assert(Stream.fibs.take(10).toList == Stream.fibsViaUnfold.take(10).toList)
   }
 
+  test("scanRight 1,2,3") {
+    assert(Stream(1, 2, 3).scanRight(0)(_ + _).toList == List(6, 5, 3, 0))
+  }
 }

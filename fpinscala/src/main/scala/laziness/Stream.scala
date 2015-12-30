@@ -125,23 +125,27 @@ sealed trait Stream[+A] {
     case (Empty, Cons(h2, t2))      => Some((None, Some(h2())), (Empty, t2()))
     case (Empty, Empty)             => None
   }
-  
+
   // 5.14
-  def startsWith[A](s: Stream[A]): Boolean = zipAll(s).takeWhile( a => !a._2.isEmpty ).forAll{
-    case (h1,h2) => h1 == h2
+  def startsWith[A](s: Stream[A]): Boolean = zipAll(s).takeWhile(a => !a._2.isEmpty).forAll {
+    case (h1, h2) => h1 == h2
   }
-  
+
   // 5.15 tails 
-  def tails: Stream[Stream[A]] = Stream.unfold(this){
+  def tails: Stream[Stream[A]] = Stream.unfold(this) {
     case Empty => None
-    case s => Some((s, s drop 1)) 
+    case s     => Some((s, s drop 1))
   } appendViaFoldRight Stream(Empty)
-  
+
   def hasSubsequence[A](s: Stream[A]): Boolean = tails exists (_ startsWith s)
-  
+
   // 5.16 
-   //def scanRight[B](z: B)(f: (A, => B) => B): Stream[B]
-    
+  def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] =
+    foldRight((z, Stream(z)))((a, b) => {
+      lazy val b2 = b
+      val r = f(a, b2._1)
+      (r, Stream.cons(r, b2._2))
+    })._2
 }
 
 case object Empty extends Stream[Nothing]
@@ -192,5 +196,5 @@ object Stream {
   def constantViaUnfold[A](a: A): Stream[A] = unfold(a) { s => Some((s, s)) }
 
   val onesViaViaUnfold = unfold(1) { s => Some((1, 1)) }
-      
+
 }
