@@ -7,6 +7,8 @@ trait RNG {
 }
 
 case class SimpleRNG(seed: Long) extends RNG {
+  type Rand[+A] = RNG => (A, RNG)
+
   def nextInt: (Int, RNG) = {
     val newSeed = (seed * 0x5DEECE66DL + 0xBL) & 0xFFFFFFFFFFFFFFL
     val nextRNG = SimpleRNG(newSeed)
@@ -23,9 +25,8 @@ case class SimpleRNG(seed: Long) extends RNG {
   // 6.2
   def double(rng: RNG): (Double, RNG) = {
     val (i, r) = nonNegativeInt(rng)
-    (i.toDouble / Int.MaxValue.toDouble + 1, r)
+    (i.toDouble / (Int.MaxValue.toDouble + 1), r)
   }
-
   // 6.3 
 
   def intDouble(rng: RNG): ((Int, Double), RNG) = {
@@ -57,4 +58,55 @@ case class SimpleRNG(seed: Long) extends RNG {
       }
     gen(count, rng, List())
   }
+
+  val int: Rand[Int] = _.nextInt
+
+  def unit[A](a: A): Rand[A] = rng => (a, rng)
+
+  def map[A, B](s: Rand[A])(f: A => B): Rand[B] =
+    rng => {
+      val (a, rng2) = s(rng)
+      (f(a), rng2)
+    }
+  def nonNegativeEven: Rand[Int] = map(nonNegativeInt)(i => i - i % 2)
+
+  // 6.5
+  def doubleViaMap: Rand[Double] =
+    map(nonNegativeInt)(i => i.toDouble / (Int.MaxValue.toDouble + 1))
+
+  //6.6
+  def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
+    rng => {
+      val (a, rng2) = ra(rng)
+      val (b, rng3) = rb(rng2)
+      (f(a, b), rng3)
+    }
+
+  def both[A, B](ra: Rand[A], rb: Rand[B]): Rand[(A, B)] =
+    map2(ra, rb)((_, _))
+
+  val randIntDouble: Rand[(Int, Double)] = both(int, double)
+  val randDoubleInt: Rand[(Double, Int)] = both(double, int)
+  // 6.7
+  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = {
+    rng =>
+      {
+        @tailrec
+        def go(l: List[Rand[A]], r: RNG, rt: List[A]): (List[A], RNG) =
+          l match {
+            case h :: t => {
+              val (s, nr) = h(rng)
+              go(t, nr, s :: rt)
+            }
+            case Nil => (rt, r)
+          }
+        go(fs, rng, List())
+      }
+  }
+
+  def sequence2[A](fs: List[Rand[A]]): Rand[List[A]] =
+    fs.foldRight(unit(List[A]()))((f, acc) => map2(f, acc)(_ :: _))
+
+  def intsViaSequence(count: Int): Rand[List[Int]] =
+    sequence2(List.fill(count)(int))
 }
